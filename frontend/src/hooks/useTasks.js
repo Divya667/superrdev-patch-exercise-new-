@@ -6,20 +6,47 @@ export function useTasks(query, status, page, pageSize) {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [debouncedQuery, setDebouncedQuery] = useState(query);
 
   useEffect(() => {
-    setLoading(true);
+    const timeoutId = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300);
 
-    fetchTasks({ query, status, page, pageSize })
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [query]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    setLoading(true);
+    setError(null);
+
+    // Loading error
+    fetchTasks({ query: debouncedQuery, status, page, pageSize },
+      { signal: controller.signal })
       .then((data) => {
         setTasks(data.items);
         setTotal(data.total);
-        setLoading(false);
       })
       .catch((err) => {
-        setError(err.message);
+        if (err.name !== 'AbortError' &&
+          err.name !== 'CanceledError') {
+          setError(err.message || 'Failed to fetch tasks.');
+        }
+      }).finally(() => {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       });
-  }, [query, status, page, pageSize]);
+
+    return () => {
+      controller.abort();
+    };
+
+  }, [debouncedQuery, status, page, pageSize]);
 
   return { tasks, total, loading, error };
 }

@@ -50,9 +50,12 @@ CREATE OR REPLACE PACKAGE BODY task_search_pkg AS
           INTO p_total_count
           FROM tasks
          WHERE archived = 0
-           AND LOWER(title) LIKE v_term
-            OR LOWER(description) LIKE v_term
-           AND (p_status IS NULL OR status = p_status);
+           AND (
+               LOWER(title) LIKE v_term OR LOWER(description) LIKE v_term
+           )
+           AND (
+               p_status IS NULL OR status = p_status
+           );
 
         -- Paginated results using ROWNUM (pre-12c pattern)
         OPEN p_results FOR
@@ -64,9 +67,12 @@ CREATE OR REPLACE PACKAGE BODY task_search_pkg AS
                                assignee, created_at
                           FROM tasks
                          WHERE archived = 0
-                           AND LOWER(title) LIKE v_term
-                            OR LOWER(description) LIKE v_term
-                           AND (p_status IS NULL OR status = p_status)
+                            AND (
+                               LOWER(title) LIKE v_term OR LOWER(description) LIKE v_term
+                           )
+                           AND (
+                               p_status IS NULL OR status = p_status
+                           )
                          ORDER BY created_at DESC
                     ) t
                    WHERE ROWNUM <= v_offset + p_page_size

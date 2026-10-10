@@ -7,7 +7,20 @@ import { useTasks } from './hooks/useTasks';
 export default function App() {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('');
+  // Error of initial state
   const [page, setPage] = useState(1);
+
+  // Reset pagination when the search query changes
+  const handleSearchChange = (value) => {
+    setQuery(value);
+    setPage(1);
+  };
+
+  // Reset pagination when the status filter changes
+  const handleStatusChange = (value) => {
+    setStatus(value);
+    setPage(1);
+  };
 
   const { tasks, total, loading, error } = useTasks(query, status, page, 10);
 
@@ -21,15 +34,26 @@ export default function App() {
       </header>
 
       <div className="controls">
-        <SearchBar value={query} onChange={setQuery} />
-        <StatusFilter value={status} onChange={setStatus} />
+        {/*There is an error*/}
+        {/*<SearchBar value={query} onChange={setQuery} />*/}
+        {/*<StatusFilter value={status} onChange={setStatus} />*/}
+        <SearchBar
+          value={query}
+          onChange={handleSearchChange}
+        />
+
+        <StatusFilter
+          value={status}
+          onChange={handleStatusChange}
+        />
+
       </div>
 
       <TaskTable tasks={tasks} loading={loading} error={error} />
 
       {totalPages > 1 && (
         <div className="pagination">
-          <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+          <button disabled={page <= 1} onClick={() =>  setPage((p) => p - 1)}>
             Previous
           </button>
           <span>

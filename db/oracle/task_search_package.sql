@@ -1,7 +1,7 @@
+
 -- Oracle PL/SQL package for task search
--- This is a reference artifact — it does not run locally against H2.
--- It mirrors the logic used by the Spring Data repository and is
--- representative of the kind of Oracle PL/SQL found in production.
+-- Reference artifact; the local application uses H2.
+-- Mirrors the search and pagination logic in the Spring Data repository.
 
 CREATE OR REPLACE PACKAGE task_search_pkg AS
 
@@ -51,13 +51,15 @@ CREATE OR REPLACE PACKAGE BODY task_search_pkg AS
           FROM tasks
          WHERE archived = 0
            AND (
-               LOWER(title) LIKE v_term OR LOWER(description) LIKE v_term
+               LOWER(title) LIKE v_term
+               OR LOWER(description) LIKE v_term
            )
            AND (
-               p_status IS NULL OR status = p_status
+               p_status IS NULL
+               OR status = p_status
            );
 
-        -- Paginated results using ROWNUM (pre-12c pattern)
+        -- Paginated results using the pre-12c ROWNUM pattern
         OPEN p_results FOR
             SELECT id, title, description, status, priority, assignee, created_at
               FROM (
@@ -67,11 +69,13 @@ CREATE OR REPLACE PACKAGE BODY task_search_pkg AS
                                assignee, created_at
                           FROM tasks
                          WHERE archived = 0
-                            AND (
-                               LOWER(title) LIKE v_term OR LOWER(description) LIKE v_term
+                           AND (
+                               LOWER(title) LIKE v_term
+                               OR LOWER(description) LIKE v_term
                            )
                            AND (
-                               p_status IS NULL OR status = p_status
+                               p_status IS NULL
+                               OR status = p_status
                            )
                          ORDER BY created_at DESC
                     ) t

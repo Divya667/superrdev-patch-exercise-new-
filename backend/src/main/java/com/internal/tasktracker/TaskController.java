@@ -7,7 +7,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -50,9 +52,8 @@ public class TaskController {
                         .valueOf(status.trim().toUpperCase(Locale.ROOT))
                         .name();
             } catch (IllegalArgumentException ex) {
-                 return ResponseEntity.badRequest().body(
-                 Map.of("error", "Invalid task status")
-                );
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Invalid task status"));
             }
         }
 
@@ -62,10 +63,9 @@ public class TaskController {
                 Sort.by(Sort.Direction.DESC, "createdAt")
         );
 
-        // Fetch matching tasks
+        // Fetch matching tasks with database-level pagination
         Page<Task> taskPage =
                 taskRepository.searchTasks(searchTerm, normalizedStatus, pageable);
-
 
         // Prepare response
         Map<String, Object> response = new LinkedHashMap<>();
